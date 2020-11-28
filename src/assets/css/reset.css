@@ -1,0 +1,39 @@
+*{
+	margin: 0;
+	padding: 0;
+}
+ul{
+	list-style: none;
+}
+img{
+	display: inline-block;
+}
+h1,h2,h3{
+	font-size: 16px;
+	font-weight: normal;
+}
+a{
+	text-decoration: none;
+	color: #333;
+	cursor: pointer;
+}
+.l{
+	float: left;
+}
+.r{
+	float: right;
+}
+.clear::after{
+	content: '';
+	display: block;
+	clear: both;
+}
+html,body{
+	width: 100%;
+	min-width: 1408px;
+	height: 100%;
+	min-height: 937px;
+	overflow: scroll;
+	background-color: #f0f2f5;
+}
+
