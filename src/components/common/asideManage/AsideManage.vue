@@ -74,7 +74,7 @@ export default {
     #aside{
         background-color: #fff;
         width: 239px;
-        height: 100%;
+        height: calc(100% - 80px);
         box-shadow: 5px -5px 5px rgba(0,0,0,.1);
     }
     #aside:hover{

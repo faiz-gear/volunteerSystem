@@ -73,7 +73,7 @@ export default {
     .header_right ul{
         position: absolute;
         width: 120px;
-        margin-top: 10px;
+        margin-top: 5px;
         z-index: 99;
         box-shadow: 0 5px 5px rgba(0,0,0,.1);
         display: none;

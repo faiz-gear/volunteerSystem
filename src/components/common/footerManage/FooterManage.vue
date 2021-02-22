@@ -13,9 +13,9 @@ export default {
 <style>
     #footer{
         width: calc(100% - 239px);
-        height: 150px;
+        height: 143px;
         text-align: center;
-        margin-top: 50px;
+        padding-top: 50px;
         /* background-color: #fff; */
     }
     #footer i::before{
