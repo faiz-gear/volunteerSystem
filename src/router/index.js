@@ -14,10 +14,6 @@ Vue.use(Router)
 const router = new Router({
   mode: 'history',
   routes: [
-    // {
-    //   redirect: 'volunteer',
-    //   component: Volunteer
-    // },
     {
       path: '/volunteerMessage',
       component: VolunteerMessage
@@ -46,7 +42,7 @@ const router = new Router({
       path: '/activityClass',
       component: ActivityClass
     }
-    
+
   ]
 })
 

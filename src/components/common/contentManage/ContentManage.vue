@@ -11,14 +11,9 @@ export default {
 </script>
 <style>
 #content {
-  width: calc(100% - 240px - 5px - 20px);
-  max-height: calc(100% - 80px - 150px);
-  min-height: 600px;
+  width: 100%;
+  height: 100%;
   background-color: #fff;
-  margin-left: 10px;
-  box-shadow: 5px 0px 5px rgba(0, 0, 0, 0.2);
-  /* overflow: hidden; */
-  /* 决定分页栏位置 */
   position: relative;
   animation: move 1s ease forwards;
 }

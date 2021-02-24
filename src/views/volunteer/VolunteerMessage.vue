@@ -15,7 +15,7 @@
             @on-change="showGrade"
           >
             <Option
-              v-for="item in cityList"
+              v-for="item in gradeList"
               :value="item.value"
               :key="item.value"
               >{{ item.label }}</Option
@@ -37,6 +37,7 @@
         <Table
           :columns="columns"
           :data="showData"
+          :loading="loading"
           @on-sort-change="sortChanged"
         >
           <template slot-scope="{ row, index }" slot="id">
@@ -105,7 +106,7 @@
           </template>
         </Table>
         <page
-          style="position: absolute; right: 82px; bottom: -52px"
+          style="position: absolute; right: 82px; bottom: 10px"
           :total="dataCount"
           :page-size="pageSize"
           @on-change="changePage"
@@ -113,73 +114,60 @@
         ></page>
       </div>
     </content-manage>
-    <toast v-show="isShowToast" @click="showToast">
-      <h2 slot="toast_top">
-        添加志愿者<span @click="closeToast">×</span>
-        {{ newdata }}
-      </h2>
-      <div slot="toast_content">
-        <div>
-          <span>学号</span>
-          <Input
-            type="number"
-            v-model="newdata.id"
-            placeholder="请输入学号..."
-            @on-blur="chargeNum(newdata.id, 0, 12, '学号')"
-          />
-          <span class="warning">学号不能为空！</span>
-        </div>
-        <div>
-          <span>姓名</span>
-          <Input clearable v-model="newdata.name" placeholder="请输入姓名..."  @on-blur="chargeText(newdata.name, 1, '姓名')" />
-          <span class="warning">姓名不能为空！</span>
-        </div>
-        <div>
-          <span>性别</span>
-          <RadioGroup v-model="newdata.sex" value="男" >
-            <Radio checked label="男">
-              <span>男</span>
-            </Radio>
-            <Radio label="女">
-              <span>女</span>
-            </Radio>
-            <span class="warning">性别不能为空！</span>
-          </RadioGroup>
-        </div>
-        <div>
-          <span>级别</span>
-          <Input
-            clearable
-            v-model="newdata.grade"
-            placeholder="请输入级别..."
-            @on-blur="chargeText(newdata.grade, 3, '级别')"
-          />
-          <span class="warning">级别不能为空！</span>
-        </div>
-        <div>
-          <span>班级</span>
-          <Input
-            clearable
-            v-model="newdata.class"
-            placeholder="请输入班级..."
-            @on-blur="chargeText(newdata.class, 4, '年级')"
-          />
-          <span class="warning">班级不能为空！</span>
-        </div>
-        <div>
-          <span>电话</span>
-          <Input
-            type="number"
-            v-model="newdata.phone"
-            placeholder="请输入电话..."
-            @on-blur="chargeNum(newdata.phone, 5, 11, '电话')"
-          />
-          <span class="warning">电话不能为空！</span>
-        </div>
-      </div>
-      <div slot="toast_bottom">
-        <Button class="r" @click="closeToast">关闭</Button>
-        <Button class="r" type="success" @click="submit">提交</Button>
+    <toast
+      v-show="isShowToast"
+      @click="showToast"
+      :showToast="isShowToast"
+      @submit="submit"
+      @closeToast="closeToast"
+    >
+      <div slot="toast_content" class="volunteerToast">
+        <Form
+          ref="formValidate"
+          :model="formValidate"
+          :rules="ruleValidate"
+          :label-width="80"
+        >
+          <FormItem label="学号" prop="id">
+            <Input
+              v-model="formValidate.id"
+              placeholder="请输入你的学号"
+              type="number"
+            ></Input>
+          </FormItem>
+          <FormItem label="姓名" prop="name">
+            <Input
+              v-model="formValidate.name"
+              placeholder="请输入你的姓名"
+            ></Input>
+          </FormItem>
+          <FormItem label="性别" prop="sex">
+            <RadioGroup v-model="formValidate.sex">
+              <Radio label="男">男</Radio>
+              <Radio label="女">女</Radio>
+            </RadioGroup>
+          </FormItem>
+          <FormItem label="级别" prop="grade">
+            <Select style="width:68%" v-model="formValidate.grade" placeholder="请选择你的级别">
+                <Option value="2020级">2020级</Option>
+                <Option value="2019级">2019级</Option>
+                <Option value="2018级">2018级</Option>
+                <Option value="2017级">2017级</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="班级" prop="class">
+            <Input
+              v-model="formValidate.class"
+              placeholder="请输入你的班级"
+            ></Input>
+          </FormItem>
+          <FormItem label="电话" prop="phone">
+            <Input
+              v-model="formValidate.phone"
+              placeholder="请输入你的电话"
+            ></Input>
+          </FormItem>
+        </Form>
       </div>
     </toast>
   </div>
@@ -197,7 +185,7 @@ export default {
   },
   data() {
     return {
-      cityList: [
+      gradeList: [
         {
           value: "2020级",
           label: "2020级",
@@ -263,7 +251,6 @@ export default {
           id: "201705200101",
           name: "姑父",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -272,7 +259,6 @@ export default {
           id: "201705200102",
           name: "张三",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -281,7 +267,6 @@ export default {
           id: "201705200103",
           name: "李四",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -290,7 +275,6 @@ export default {
           id: "201705200104",
           name: "阿姨",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -299,7 +283,6 @@ export default {
           id: "201705200105",
           name: "舅舅",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -308,7 +291,6 @@ export default {
           id: "201705200106",
           name: "姑姑",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -317,7 +299,6 @@ export default {
           id: "201705200107",
           name: "弟弟",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -326,7 +307,6 @@ export default {
           id: "201705200108",
           name: "哥哥",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -335,7 +315,6 @@ export default {
           id: "201705200109",
           name: "妹妹",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -344,7 +323,6 @@ export default {
           id: "201705200110",
           name: "姐姐",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -353,7 +331,6 @@ export default {
           id: "201705200111",
           name: "妈妈",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -362,7 +339,6 @@ export default {
           id: "201705200112",
           name: "爸爸",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -371,7 +347,6 @@ export default {
           id: "201705200113",
           name: "奶奶",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -380,7 +355,6 @@ export default {
           id: "201705200114",
           name: "爷爷",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -389,7 +363,6 @@ export default {
           id: "201705200115",
           name: "叔叔",
           sex: "男",
-          date: "2016-10-03",
           grade: "2017级",
           class: "电商一班",
           phone: "15616015756",
@@ -410,20 +383,86 @@ export default {
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
-      pageSize: 13,
+      pageSize: 12,
       // 当前页码
       page: 1,
       // 每页显示信息存储
       showData: [],
       isShowToast: false,
-      newdata: {
+      // 加载中状态
+      loading: false,
+      // 加载中状态防抖timer
+      timer: null,
+      formValidate: {
         id: "",
         name: "",
-        sex: "男",
-        date: "",
+        sex: "",
         grade: "",
         class: "",
         phone: "",
+      },
+      ruleValidate: {
+        name: [
+          {
+            required: true,
+            message: "姓名不能为空",
+            trigger: "blur",
+          },
+        ],
+        id: [
+          {
+            required: true,
+            message: "id不能为空",
+            trigger: "blur",
+          },
+          {
+            type: "string",
+            min: 12,
+            max: 12,
+            message: "学号必须是12位",
+            trigger: "blur",
+          },
+        ],
+        sex: [
+          {
+            required: true,
+            message: "请选择性别",
+            trigger: "change",
+          },
+        ],
+        grade: [
+          {
+            required: true,
+            message: "级别不能为空",
+            trigger: "blur",
+          },
+        ],
+        class: [
+          {
+            required: true,
+            message: "班级不能为空",
+            trigger: "blur",
+          },
+          {
+            type: "string",
+            message: "班级不能为空",
+            trigger: "blur",
+          },
+        ],
+        phone: [
+          {
+            required: true,
+            message: "电话不能为空",
+            trigger: "blur",
+          },
+          {
+            type: "string",
+            min: 11,
+            max: 11,
+            message: "电话必须是11位",
+            trigger: "blur",
+          },
+        ],
       },
     };
   },
@@ -484,10 +523,19 @@ export default {
     },
     changePage(index) {
       console.log(this.ajaxHistoryData);
+      clearTimeout(this.timer);
       this.page = index;
       let _start = (index - 1) * this.pageSize;
       let _end = index * this.pageSize;
       this.showData = this.ajaxHistoryData.slice(_start, _end);
+      this.loading = true;
+      this.debounce();
+    },
+    // 加载中防抖
+    debounce() {
+      this.timer = setTimeout(() => {
+        this.loading = false;
+      }, 2000);
     },
     //按级别显示
     showGrade(value) {
@@ -538,73 +586,25 @@ export default {
     closeToast() {
       this.isShowToast = false;
     },
-    // 封装判断输入的数字是否符合要求函数
-    chargeNum(type, index, length, paramType) {
-      let flag = true;
-      let warning = document.querySelectorAll(".warning");
-      if (!type) {
-        warning[index].className = "warning warning-show";
-        warning[index].innerHTML = paramType + "不能为空！";
-        flag = false;
-      } else if (type.length != length) {
-        warning[index].className = "warning warning-show";
-        warning[index].innerHTML = paramType + "必须为" + length + "位！";
-        flag = false;
-      } else {
-        warning[index].className = "warning";
-      }
-      return flag;
-    },
-    // 封装判断输入的文字是否符合要求函数
-    chargeText(type, index, paramType) {
-      let flag = true;
-      let warning = document.querySelectorAll(".warning");
-      // console.log(warning);
-      if (!type) {
-        warning[index].className = "warning warning-show";
-        warning[index].innerHTML = paramType + "不能为空！";
-        flag = false;
-      } else {
-        warning[index].className = "warning";
-      }
-      return flag;
-    },
     // toast提交
     submit() {
-      let flag = true;
-      // 判断输入内容是否符合要求
-      // 判断学号是否输入正确
-      flag = this.chargeNum(this.newdata.id, 0, 12, "学号");
-      // 判断姓名name
-      flag = this.chargeText(this.newdata.name, 1, "姓名");
-      // 判断性别选择
-      flag = this.chargeText(this.newdata.sex, 2, "性别");
-      // 判断级别输入
-      flag = this.chargeText(this.newdata.grade, 3, "级别");
-      // 判断班级
-      flag = this.chargeText(this.newdata.class, 4, "班级");
-      // 判断电话
-      flag = this.chargeNum(this.newdata.phone, 5, 11, "电话");
-      // 添加新数据
-      if (flag) {
-        this.data.unshift(this.newdata);
+        this.data.unshift(this.formValidate);
         this.refreshShowData();
-        this.$Message.success("添加成功");
+        this.$Message.success("添加志愿者成功");
         this.isShowToast = false;
-      }
     },
     // 输入框失焦时判断数据
   },
 };
 </script>
   
-<style>
+<style scoped>
 .bianju {
   margin-right: 10px;
 }
 .content_top {
   height: 40px;
-  background-color: #f0f2f5;
+  background-color: #f5f7f9;
 }
 .content_top .top_title {
   line-height: 40px;
@@ -619,8 +619,6 @@ export default {
   padding-top: 4px;
   width: 500px;
 }
-
-/* 面包屑样式 */
 .ivu-breadcrumb {
   display: inline;
   line-height: 40px;
@@ -641,31 +639,25 @@ export default {
   margin-left: 10px;
 }
 /* 添加志愿者弹出框样式 */
-.toast_content div {
+.volunteerToast div {
   padding: 5px 0;
 }
-.toast_content span {
+.volunteerToast span {
   margin-right: 10px;
 }
-.toast_content span:nth-child(3) {
+.volunteerToast span:nth-child(3) {
   display: none;
   color: #ed4014;
 }
 /* 输入框宽度设置 */
-.toast_content .ivu-input {
+.volunteerToast .ivu-input {
   width: 100%;
 }
-.toast_content .ivu-input-wrapper {
+.volunteerToast .ivu-input-wrapper {
   width: 68% !important;
 }
-.toast_bottom {
-  margin-top: 80px;
-}
-/* 按钮位置 */
-.toast_bottom .r {
-  margin-right: 20px;
-}
-.warning-show {
-  display: inline !important;
+.ivu-form-item {
+  margin-bottom: 10px;
+  
 }
 </style>

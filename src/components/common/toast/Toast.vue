@@ -1,14 +1,15 @@
 <template>
-  <div class="toast">
+  <div class="toast" v-show="showToast">
     <div class="wrapper">
       <div class="toast_top">
-        <slot name="toast_top"></slot>
+        <h2>{{title}}<span @click="closeToast">×</span></h2>
       </div>
       <div class="toast_content">
         <slot name="toast_content"></slot>
       </div>
       <div class="toast_bottom">
-          <slot name="toast_bottom"></slot>
+        <Button class="r" @click="closeToast">关闭</Button>
+        <Button class="r" type="success" @click="submit">提交</Button>
       </div>
     </div>
   </div>
@@ -17,8 +18,23 @@
 <script>
 export default {
   name: "Toast",
+  props: {
+    showToast: {
+      type: Boolean,
+      default: false
+    },
+    title: {
+      type: String,
+      default: '添加志愿者'
+    }
+  },
   methods: {
-
+    closeToast() {
+      this.$emit('closeToast');
+    },
+    submit() {
+      this.$emit("submit");
+    },
   },
 };
 </script>
@@ -36,7 +52,7 @@ export default {
 .wrapper {
   position: fixed;
   width: 600px;
-  height: 600px;
+  height: 80%;
   transform: translate(50%, -50%);
   top: 50%;
   right: 50%;
@@ -86,12 +102,18 @@ export default {
   color: #000;
 }
 .toast_content {
-    width: 100%;
-    box-sizing: border-box;
-    padding-top: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 20px;
 }
-.toast_content>div>div{
-    padding-left: 80px;
+.toast_content > div > div {
+  padding-left: 80px;
 }
-
+.toast_bottom {
+  margin-top: 40px;
+}
+/* 按钮位置 */
+.toast_bottom .r {
+  margin-right: 20px;
+}
 </style>
