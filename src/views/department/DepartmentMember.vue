@@ -2,14 +2,15 @@
   <div id="content" class="l">
     <content-manage name="volunteerMessage">
       <div class="content_top">
-        <Breadcrumb class="mgleft">
-          <BreadcrumbItem>部门管理</BreadcrumbItem>
-          <BreadcrumbItem to="/volunteerMessage">部门成员</BreadcrumbItem>
-        </Breadcrumb>
-        <div class="top_right r clear">
+        <div class="top_left">
+          <Breadcrumb class="mgleft">
+            <BreadcrumbItem>部门管理</BreadcrumbItem>
+            <BreadcrumbItem to="/volunteerMessage">部门成员</BreadcrumbItem>
+          </Breadcrumb>
+        </div>
+        <div class="top_right">
           <Select
             style="width: 100px"
-            class="bianju"
             placeholder="部门"
             @on-change="showDepartment"
           >
@@ -24,7 +25,6 @@
             search
             enter-button
             placeholder="请输入姓名..."
-            class="bianju"
             @on-search="volSearch"
           />
           <Button type="info" class="bianju" @click="showToast"
@@ -99,7 +99,7 @@
         ></page>
       </div>
     </content-manage>
-    <toast
+      <toast
       v-show="isShowToast"
       @click="showToast"
       :showToast="isShowToast"
@@ -107,58 +107,43 @@
       @closeToast="closeToast"
     >
       <div slot="toast_content" class="departmentToast">
-        <div>
-          <span>姓名</span>
-          <Input
-            clearable
-            v-model="newdata.name"
-            placeholder="请输入姓名..."
-            @on-blur="chargeText(newdata.name, 0, '姓名')"
-          />
-          <span class="warning">姓名不能为空！</span>
-        </div>
-        <div>
-          <span>性别</span>
-          <RadioGroup v-model="newdata.sex" value="男">
-            <Radio checked label="男">
-              <span>男</span>
-            </Radio>
-            <Radio label="女">
-              <span>女</span>
-            </Radio>
-            <span class="warning">性别不能为空！</span>
-          </RadioGroup>
-        </div>
-        <div>
-          <span>部门</span>
-          <Input
-            clearable
-            v-model="newdata.department"
-            placeholder="请输入部门..."
-            @on-blur="chargeText(newdata.department, 2, '部门')"
-          />
-          <span class="warning">部门不能为空！</span>
-        </div>
-        <div>
-          <span>职位</span>
-          <Input
-            clearable
-            v-model="newdata.position"
-            placeholder="请输入职位..."
-            @on-blur="chargeText(newdata.position, 3, '职位')"
-          />
-          <span class="warning">职位不能为空！</span>
-        </div>
-        <div>
-          <span>电话</span>
-          <Input
-            type="number"
-            v-model="newdata.phone"
-            placeholder="请输入电话..."
-            @on-blur="chargeNum(newdata.phone, 4, 11, '电话')"
-          />
-          <span class="warning">电话不能为空！</span>
-        </div>
+        <Form
+          ref="formValidate"
+          :model="formValidate"
+          :rules="ruleValidate"
+          :label-width="80"
+        >
+          <FormItem label="姓名" prop="name">
+            <Input
+              v-model="formValidate.name"
+              placeholder="请输入你的姓名"
+            ></Input>
+          </FormItem>
+          <FormItem label="性别" prop="sex">
+            <RadioGroup v-model="formValidate.sex">
+              <Radio label="男">男</Radio>
+              <Radio label="女">女</Radio>
+            </RadioGroup>
+          </FormItem>
+          <FormItem label="部门" prop="department">
+            <Input
+              v-model="formValidate.department"
+              placeholder="请输入你的部门"
+            ></Input>
+          </FormItem>
+          <FormItem label="职位" prop="position">
+            <Input
+              v-model="formValidate.position"
+              placeholder="请输入你的职位"
+            ></Input>
+          </FormItem>
+          <FormItem label="电话" prop="phone">
+            <Input
+              v-model="formValidate.phone"
+              placeholder="请输入你的电话"
+            ></Input>
+          </FormItem>
+        </Form>
       </div>
     </toast>
   </div>
@@ -295,14 +280,66 @@ export default {
       // 每页显示信息存储
       showData: [],
       isShowToast: false,
-      newdata: {
-        id: "",
+      formValidate: {
         name: "",
-        sex: "男",
-        date: "",
+        sex: "",
         department: "",
         position: "",
         phone: "",
+      },
+      ruleValidate: {
+        name: [
+          {
+            required: true,
+            message: "姓名不能为空",
+            trigger: "blur",
+          },
+        ],  
+        sex: [
+          {
+            required: true,
+            message: "请选择性别",
+            trigger: "change",
+          },
+        ],
+        department: [
+          {
+            required: true,
+            message: "部门不能为空",
+            trigger: "blur",
+          },
+          {
+            type: "string",
+            message: "部门不能为空",
+            trigger: "blur",
+          },
+        ],
+        position: [
+          {
+            required: true,
+            message: "职位不能为空",
+            trigger: "blur",
+          },
+          {
+            type: "string",
+            message: "职位不能为空",
+            trigger: "blur",
+          },
+        ],
+        phone: [
+          {
+            required: true,
+            message: "电话不能为空",
+            trigger: "blur",
+          },
+          {
+            type: "string",
+            min: 11,
+            max: 11,
+            message: "电话必须是11位",
+            trigger: "blur",
+          },
+        ],
       },
       // 加载中状态
       loading: false,
@@ -430,93 +467,41 @@ export default {
     closeToast() {
       this.isShowToast = false;
     },
-    // 封装判断输入的数字是否符合要求函数
-    chargeNum(type, index, length, paramType) {
-      let flag = true;
-      let warning = document.querySelectorAll(".warning");
-      if (!type) {
-        warning[index].className = "warning warning-show";
-        warning[index].innerHTML = paramType + "不能为空！";
-        flag = false;
-      } else if (type.length != length) {
-        warning[index].className = "warning warning-show";
-        warning[index].innerHTML = paramType + "必须为" + length + "位！";
-        flag = false;
-      } else {
-        warning[index].className = "warning";
-      }
-      return flag;
-    },
-    // 封装判断输入的文字是否符合要求函数
-    chargeText(type, index, paramType) {
-      let flag = true;
-      let warning = document.querySelectorAll(".warning");
-      // console.log(warning);
-      if (!type) {
-        warning[index].className = "warning warning-show";
-        warning[index].innerHTML = paramType + "不能为空！";
-        flag = false;
-      } else {
-        warning[index].className = "warning";
-      }
-      return flag;
-    },
-    // toast提交
+        // toast提交
     submit() {
-      let flag = true;
-      // 判断输入内容是否符合要求
-      // 判断姓名name
-      flag = this.chargeText(this.newdata.name, 0, "姓名");
-      // 判断性别选择
-      // 判断级别输入
-      flag = this.chargeText(this.newdata.department, 2, "部门");
-      // 判断班级
-      flag = this.chargeText(this.newdata.position, 3, "职位");
-      // 判断电话
-      flag = this.chargeNum(this.newdata.phone, 4, 11, "电话");
-      // 添加新数据
-      if (flag) {
-        this.data.unshift(this.newdata);
-        this.refreshShowData();
-        this.$Message.success("添加部门成员成功");
-        this.isShowToast = false;
-      }
+      this.data.unshift(this.formValidate);
+      this.refreshShowData();
+      this.$Message.success("添加志愿者成功");
+      this.isShowToast = false;
     },
-    // 输入框失焦时判断数据
   },
 };
 </script>
 
 <style scoped>
-.bianju {
-  margin-right: 10px;
-}
 .content_top {
+  display: flex;
+  justify-content: space-between;
   height: 40px;
   background-color: #f5f7f9;
 }
-.content_top .top_title {
+.content_top .top_left {
   line-height: 40px;
-  font-weight: bold;
-  margin-left: 20px;
 }
 .content_top .top_right {
   display: flex;
   justify-content: space-evenly;
-  align-items: space-evenly;
-  height: 36px;
+  align-items: center;
   padding-top: 4px;
   width: 500px;
 }
-
-/* 面包屑样式 */
 .ivu-breadcrumb {
   display: inline;
-  line-height: 40px;
 }
 /* 搜索框样式 */
 .ivu-input-wrapper {
   width: 200px !important;
+  transform: translateY(-1px);
 }
 .ivu-btn-info {
   position: relative;
@@ -529,7 +514,7 @@ export default {
 .mgleft {
   margin-left: 10px;
 }
-/* 添加志愿者弹出框样式 */
+/* 添加部门成员弹出框样式 */
 .departmentToast div {
   padding: 5px 0;
 }
@@ -547,14 +532,7 @@ export default {
 .departmentToast .ivu-input-wrapper {
   width: 68% !important;
 }
-.toast_bottom {
-  margin-top: 80px;
-}
-/* 按钮位置 */
-.toast_bottom .r {
-  margin-right: 20px;
-}
-.warning-show {
-  display: inline !important;
+.ivu-form-item {
+  margin-bottom: 10px;
 }
 </style>

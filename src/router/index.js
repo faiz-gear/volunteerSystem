@@ -15,6 +15,11 @@ const router = new Router({
   mode: 'history',
   routes: [
     {
+      path: '/',
+      name: '/volunteerMessage',
+      redirect: '/volunteerMessage'
+    },
+    {
       path: '/volunteerMessage',
       component: VolunteerMessage
     },

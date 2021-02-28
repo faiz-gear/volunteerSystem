@@ -2,15 +2,16 @@
   <div id="content" class="l">
     <content-manage name="volunteerMessage">
       <div class="content_top">
-        <Breadcrumb class="mgleft">
-          <BreadcrumbItem>志愿者管理</BreadcrumbItem>
-          <BreadcrumbItem to="/volunteerMessage">志愿者信息</BreadcrumbItem>
-        </Breadcrumb>
-        <div class="top_right r clear">
+        <div class="top_left">
+          <Breadcrumb class="mgleft">
+            <BreadcrumbItem>志愿者管理</BreadcrumbItem>
+            <BreadcrumbItem to="/volunteerMessage">志愿者信息</BreadcrumbItem>
+          </Breadcrumb>
+        </div>
+        <div class="top_right">
           <Select
             v-model="model"
             style="width: 100px"
-            class="bianju"
             placeholder="级别"
             @on-change="showGrade"
           >
@@ -25,7 +26,6 @@
             search
             enter-button
             placeholder="请输入姓名..."
-            class="bianju"
             @on-search="volSearch"
           />
           <Button type="info" class="bianju" @click="showToast"
@@ -148,11 +148,15 @@
             </RadioGroup>
           </FormItem>
           <FormItem label="级别" prop="grade">
-            <Select style="width:68%" v-model="formValidate.grade" placeholder="请选择你的级别">
-                <Option value="2020级">2020级</Option>
-                <Option value="2019级">2019级</Option>
-                <Option value="2018级">2018级</Option>
-                <Option value="2017级">2017级</Option>
+            <Select
+              style="width: 68%"
+              v-model="formValidate.grade"
+              placeholder="请选择你的级别"
+            >
+              <Option value="2020级">2020级</Option>
+              <Option value="2019级">2019级</Option>
+              <Option value="2018级">2018级</Option>
+              <Option value="2017级">2017级</Option>
             </Select>
           </FormItem>
           <FormItem label="班级" prop="class">
@@ -588,48 +592,40 @@ export default {
     },
     // toast提交
     submit() {
-        this.data.unshift(this.formValidate);
-        this.refreshShowData();
-        this.$Message.success("添加志愿者成功");
-        this.isShowToast = false;
+      this.data.unshift(this.formValidate);
+      this.refreshShowData();
+      this.$Message.success("添加志愿者成功");
+      this.isShowToast = false;
     },
-    // 输入框失焦时判断数据
+
   },
 };
 </script>
   
 <style scoped>
-.bianju {
-  margin-right: 10px;
-}
 .content_top {
+  display: flex;
+  justify-content: space-between;
   height: 40px;
   background-color: #f5f7f9;
 }
-.content_top .top_title {
+.content_top .top_left {
   line-height: 40px;
-  font-weight: bold;
-  margin-left: 20px;
 }
 .content_top .top_right {
   display: flex;
   justify-content: space-evenly;
-  align-items: space-evenly;
-  height: 36px;
+  align-items: center;
   padding-top: 4px;
   width: 500px;
 }
 .ivu-breadcrumb {
   display: inline;
-  line-height: 40px;
 }
 /* 搜索框样式 */
 .ivu-input-wrapper {
   width: 200px !important;
-}
-.ivu-btn-info {
-  position: relative;
-  bottom: -1px;
+  transform: translateY(-1px);
 }
 /* 修改操作中input框的宽度 */
 .content_main .ivu-input {
@@ -658,6 +654,5 @@ export default {
 }
 .ivu-form-item {
   margin-bottom: 10px;
-  
 }
 </style>

@@ -19,7 +19,7 @@
       <Layout>
         <Sider hide-trigger :style="{ background: '#fff' }">
           <Menu
-            active-name="1-2"
+            active-name="1-1"
             theme="light"
             width="auto"
             :open-names="['1']"
@@ -108,7 +108,7 @@ export default {
 }
 /* 去除内容区内边距 */
 .ivu-layout-content {
-  padding: 20px 0 0 !important;
+  padding: 10px 0 0 !important;
   background-color: #f5f7f9!important;
 }
 /*  */
