@@ -494,11 +494,15 @@ export default {
     this.handleListHistory();
   },
   methods: {
-    remove(index) {
-      this.showData.splice(index, 1);
-      //   console.log(index);
-      this.editIndex = -1;
+    //初始化页面， 获取历史记录信息
+    handleListHistory() {
+      // 保存取到的所有数据
+      this.ajaxHistoryData = this.data;
+      this.dataCount = this.data.length;
+      // console.log(this.data);
+      this.refreshShowData();
     },
+    // 点击操作按钮
     handleEdit(row, index) {
       this.editIndex = index;
       this.editName = row.name;
@@ -508,6 +512,7 @@ export default {
       this.editClass = row.class;
       this.editPhone = row.phone;
     },
+    // 点击保存按钮
     handleSave(index) {
       this.data[index].id = this.editId;
       this.data[index].name = this.editName;
@@ -517,16 +522,32 @@ export default {
       this.data[index].phone = this.editPhone;
       this.editIndex = -1;
     },
-    //初始化页面， 获取历史记录信息
-    handleListHistory() {
-      // 保存取到的所有数据
-      this.ajaxHistoryData = this.data;
-      this.dataCount = this.data.length;
-      // console.log(this.data);
-      this.refreshShowData();
+    remove(index) {
+      // 确认删除弹出框
+      this.$Modal.confirm({
+        title: "确认删除吗？",
+        onOk: () => {
+          // 删除当前保存的获取到的ajax数据
+          this.ajaxHistoryData.splice(index, 1);
+          //   console.log(index);
+          // 关闭输入框
+          this.editIndex = -1;
+          // 修改删除数据后的数据总数
+          this.dataCount = this.ajaxHistoryData.length;
+          // 重新渲染当前页
+          this.refreshShowData();
+          this.$Message.info("删除成功");
+        },
+        onCancel: () => {
+          // 关闭输入框
+          this.editIndex = -1;
+          this.$Message.info("取消删除");
+        },
+      });
     },
+    // 监听页码发生改变， 并模拟异步
     changePage(index) {
-      console.log(this.ajaxHistoryData);
+      // console.log(this.ajaxHistoryData);
       clearTimeout(this.timer);
       this.page = index;
       let _start = (index - 1) * this.pageSize;
@@ -539,7 +560,7 @@ export default {
     debounce() {
       this.timer = setTimeout(() => {
         this.loading = false;
-      }, 2000);
+      }, 1000);
     },
     //按级别显示
     showGrade(value) {
@@ -579,7 +600,10 @@ export default {
       if (this.ajaxHistoryData.length <= this.pageSize) {
         this.showData = this.ajaxHistoryData;
       } else {
-        this.showData = this.ajaxHistoryData.slice(0, this.pageSize);
+        this.showData = this.ajaxHistoryData.slice(
+          (this.page - 1) * this.pageSize,
+          this.page * this.pageSize
+        );
       }
     },
     // 显示toast
@@ -597,7 +621,6 @@ export default {
       this.$Message.success("添加志愿者成功");
       this.isShowToast = false;
     },
-
   },
 };
 </script>

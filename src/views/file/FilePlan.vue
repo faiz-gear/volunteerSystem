@@ -19,12 +19,13 @@
             ref="selection"
             :columns="columns4"
             :data="showData"
+            @on-selection-change="selectionChange"
           ></Table>
         </div>
         <div class="bottom">
           <div>
             <Button>批量下载</Button>
-            <Button>批量删除</Button>
+            <Button @click="deleteSelected">批量删除</Button>
             <Upload
               action="//jsonplaceholder.typicode.com/posts/"
               style="display: inline-block"
@@ -79,7 +80,7 @@ export default {
           key: "date",
         },
       ],
-      data1: [
+      data: [
         {
           name: "安全专项方案.doc",
           size: "21.3kb",
@@ -116,42 +117,134 @@ export default {
           address: "2016-03-14k54564",
           date: "2016-10-04",
         },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14",
+          date: "2016-10-02",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14k54564",
+          date: "2016-10-04",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14",
+          date: "2016-10-02",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14k54564",
+          date: "2016-10-04",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14",
+          date: "2016-10-02",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14k54564",
+          date: "2016-10-04",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14",
+          date: "2016-10-02",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14k54564",
+          date: "2016-10-04",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14",
+          date: "2016-10-02",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14k54564",
+          date: "2016-10-04",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14",
+          date: "2016-10-02",
+        },
+        {
+          name: "安全专项方案.doc",
+          size: "21.3kb",
+          address: "2016-03-14k54564",
+          date: "2016-10-04",
+        },
       ],
+      // 实现分页：
+      // 初始化信息存储
+      ajaxHistoryData: [],
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
       pageSize: 12,
       // 当前页码
-      current: 1,
+      page: 1,
       // 每页显示信息存储
       showData: [],
+      // 已经勾选的项数据
+      selection: null,
     };
   },
   created() {
-    this.init();
+    this.handleListHistory();
   },
   methods: {
+    // 监听页码发生改变， 并模拟异步
     changePage(index) {
+      // console.log(this.ajaxHistoryData);
+      clearTimeout(this.timer);
       this.page = index;
-      //   console.log(this.page);
       let _start = (index - 1) * this.pageSize;
       let _end = index * this.pageSize;
-      this.showData = this.data1.slice(_start, _end);
+      this.showData = this.ajaxHistoryData.slice(_start, _end);
       this.loading = true;
+      this.debounce();
+    },
+    // 加载中防抖
+    debounce() {
+      this.timer = setTimeout(() => {
+        this.loading = false;
+      }, 1000);
     },
     //封装数据分页
     refreshShowData() {
-      if (this.data1.length <= this.pageSize) {
-        this.showData = this.data1;
+      if (this.ajaxHistoryData.length <= this.pageSize) {
+        this.showData = this.ajaxHistoryData;
       } else {
-        this.showData = this.data1.slice(0, this.pageSize);
+        this.showData = this.ajaxHistoryData.slice(
+          (this.page - 1) * this.pageSize,
+          this.page * this.pageSize
+        );
       }
     },
     // 初始化
-    init() {
-      this.dataCount = this.data1.length;
+    //初始化页面， 获取历史记录信息
+    handleListHistory() {
+      // 保存取到的所有数据
+      this.ajaxHistoryData = this.data;
+      this.dataCount = this.data.length;
+      // console.log(this.data);
       this.refreshShowData();
-      // console.log(this.showData);
     },
     // 上传文件格式错误的回调函数
     handleFormatError(file) {
@@ -169,8 +262,8 @@ export default {
       var size = file.size;
       size = this.filterSize(size);
       var date = this.getTime();
-      this.data1.push({name, size, date});
-      this.$Message.success('文件上传成功')
+      this.data.push({ name, size, date });
+      this.$Message.success("文件上传成功");
     },
     // 换算文件大小方法
     filterSize(size) {
@@ -195,6 +288,33 @@ export default {
       var day = date.getDate();
       day = day < 10 ? "0" + day : day;
       return year + "-" + month + "-" + day;
+    },
+    // 选中项发生变化时
+    selectionChange(selection) {
+      this.selection = selection;
+    },
+    // 批量删除
+    deleteSelected() {
+      this.$Modal.confirm({
+        title: "确认删除吗？",
+        onOk: () => {
+          // 删除选中的数据
+          this.selection &&
+            this.selection.forEach((v) => {
+              let index = this.ajaxHistoryData.findIndex(
+                (value) => value.id == v.id
+              );
+              this.ajaxHistoryData.splice(index, 1);
+            });
+          // 修改当前数据总条数
+          this.dataCount = this.ajaxHistoryData.length;
+          this.refreshShowData();
+          this.$Message.info("删除成功");
+        },
+        onCancel: () => {
+          this.$Message.info("取消删除");
+        },
+      });
     },
   },
 };
