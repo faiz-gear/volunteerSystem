@@ -32,7 +32,7 @@
           >
         </div>
       </div>
-      <div class="content_main">
+      <div class="content_main" style="overflow-x: hidden">
         <Table :columns="columns" :data="showData" :loading="loading">
           <template slot-scope="{ row, index }" slot="name">
             <Input
@@ -358,7 +358,7 @@ export default {
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
-      pageSize: 13,
+      pageSize: 12,
       // 当前页码
       page: 1,
       // 每页显示信息存储
@@ -576,10 +576,23 @@ export default {
     },
     // toast提交
     submit() {
-      this.data.unshift(this.formValidate);
-      this.refreshShowData();
-      this.$Message.success("添加志愿者成功");
-      this.isShowToast = false;
+      if (
+        this.formValidate.name &&
+        this.formValidate.sex &&
+        this.formValidate.department &&
+        this.formValidate.position &&
+        this.formValidate.phone
+      ) {
+        this.data.unshift(this.formValidate);
+        this.refreshShowData();
+        this.$Message.success("添加志愿者成功");
+        this.isShowToast = false;
+      } else {
+        this.$Message['warning']({
+          background: true,
+          content: "必填项不能为空！",
+        });
+      }
     },
   },
 };

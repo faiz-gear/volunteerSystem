@@ -27,7 +27,7 @@
             <Button>批量下载</Button>
             <Button @click="deleteSelected">批量删除</Button>
             <Upload
-              action="//jsonplaceholder.typicode.com/posts/"
+              action="//http:127.0.0.1/login"
               style="display: inline-block"
               :format="['doc', 'docx']"
               :on-format-error="handleFormatError"
@@ -186,7 +186,7 @@ export default {
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
-      pageSize: 12,
+      pageSize: 8,
       // 当前页码
       page: 1,
       // 每页显示信息存储

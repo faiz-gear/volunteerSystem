@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+const Index = () => import('../views/index.vue')
+const Login = () => import('../views/login.vue')
 const VolunteerMessage = () => import('../views/volunteer/VolunteerMessage.vue')
 const DepartmentClass = () => import('../views/department/DepartmentClass.vue')
 const DepartmentMember = () => import('../views/department/DepartmentMember.vue')
@@ -16,37 +18,47 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: '/volunteerMessage',
-      redirect: '/volunteerMessage'
+      name: '/login',
+      redirect: '/login'
     },
     {
-      path: '/volunteerMessage',
-      component: VolunteerMessage
+      path: '/index',
+      component: Index,
+      children: [{
+          path: 'volunteerMessage',
+          component: VolunteerMessage
+        },
+        {
+          path: 'departmentClass',
+          component: DepartmentClass
+        },
+        {
+          path: 'departmentMember',
+          component: DepartmentMember
+        },
+        {
+          path: 'filePlan',
+          component: FilePlan
+        },
+        {
+          path: 'fileOther',
+          component: FileOther
+        },
+        {
+          path: 'activityMessage',
+          component: ActivityMessage
+        },
+        {
+          path: 'activityClass',
+          component: ActivityClass
+        },
+      ]
     },
     {
-      path: '/departmentClass',
-      component: DepartmentClass
-    },
-    {
-      path: '/departmentMember',
-      component: DepartmentMember
-    },
-    {
-      path: '/filePlan',
-      component: FilePlan
-    },
-    {
-      path: '/fileOther',
-      component: FileOther
-    },
-    {
-      path: '/activityMessage',
-      component: ActivityMessage
-    },
-    {
-      path: '/activityClass',
-      component: ActivityClass
+      path: '/login',
+      component: Login
     }
+
 
   ]
 })

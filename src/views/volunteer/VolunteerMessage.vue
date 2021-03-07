@@ -40,14 +40,14 @@
           :loading="loading"
           @on-sort-change="sortChanged"
         >
-          <template slot-scope="{ row, index }" slot="id">
+          <template slot-scope="{ row, index }" slot="studyNumber">
             <Input
               type="text"
-              v-model="editId"
+              v-model="editStudyNumber"
               v-if="editIndex === index"
               width="50%"
             />
-            <span v-else>{{ row.id }}</span>
+            <span v-else>{{ row.studyNumber }}</span>
           </template>
           <template slot-scope="{ row, index }" slot="name">
             <Input
@@ -128,9 +128,9 @@
           :rules="ruleValidate"
           :label-width="80"
         >
-          <FormItem label="学号" prop="id">
+          <FormItem label="学号" prop="studyNumber">
             <Input
-              v-model="formValidate.id"
+              v-model="formValidate.studyNumber"
               placeholder="请输入你的学号"
               type="number"
             ></Input>
@@ -219,7 +219,7 @@ export default {
       columns: [
         {
           title: "学号",
-          slot: "id",
+          slot: "studyNumber",
           sortable: "custom",
         },
         {
@@ -252,7 +252,7 @@ export default {
       // 测试数据
       data: [
         {
-          id: "201705200101",
+          studyNumber: "201705200101",
           name: "姑父",
           sex: "男",
           grade: "2017级",
@@ -260,7 +260,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200102",
+          studyNumber: "201705200102",
           name: "张三",
           sex: "男",
           grade: "2017级",
@@ -268,7 +268,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200103",
+          studyNumber: "201705200103",
           name: "李四",
           sex: "男",
           grade: "2017级",
@@ -276,7 +276,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200104",
+          studyNumber: "201705200104",
           name: "阿姨",
           sex: "男",
           grade: "2017级",
@@ -284,7 +284,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200105",
+          studyNumber: "201705200105",
           name: "舅舅",
           sex: "男",
           grade: "2017级",
@@ -292,7 +292,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200106",
+          studyNumber: "201705200106",
           name: "姑姑",
           sex: "男",
           grade: "2017级",
@@ -300,7 +300,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200107",
+          studyNumber: "201705200107",
           name: "弟弟",
           sex: "男",
           grade: "2017级",
@@ -308,7 +308,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200108",
+          studyNumber: "201705200108",
           name: "哥哥",
           sex: "男",
           grade: "2017级",
@@ -316,7 +316,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200109",
+          studyNumber: "201705200109",
           name: "妹妹",
           sex: "男",
           grade: "2017级",
@@ -324,7 +324,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200110",
+          studyNumber: "201705200110",
           name: "姐姐",
           sex: "男",
           grade: "2017级",
@@ -332,7 +332,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200111",
+          studyNumber: "201705200111",
           name: "妈妈",
           sex: "男",
           grade: "2017级",
@@ -340,7 +340,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200112",
+          studyNumber: "201705200112",
           name: "爸爸",
           sex: "男",
           grade: "2017级",
@@ -348,7 +348,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200113",
+          studyNumber: "201705200113",
           name: "奶奶",
           sex: "男",
           grade: "2017级",
@@ -356,7 +356,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200114",
+          studyNumber: "201705200114",
           name: "爷爷",
           sex: "男",
           grade: "2017级",
@@ -364,7 +364,7 @@ export default {
           phone: "15616015756",
         },
         {
-          id: "201705200115",
+          studyNumber: "201705200115",
           name: "叔叔",
           sex: "男",
           grade: "2017级",
@@ -375,7 +375,7 @@ export default {
       // 操作的数据存储:与 data 分离避免重构的闪烁
       editIndex: "-1",
       editName: "",
-      editId: "",
+      editStudyNumber: "",
       editSex: "",
       editGrade: "",
       editClass: "",
@@ -398,7 +398,7 @@ export default {
       // 加载中状态防抖timer
       timer: null,
       formValidate: {
-        id: "",
+        studyNumber: "",
         name: "",
         sex: "",
         grade: "",
@@ -413,7 +413,7 @@ export default {
             trigger: "blur",
           },
         ],
-        id: [
+        studyNumber: [
           {
             required: true,
             message: "id不能为空",
@@ -471,25 +471,6 @@ export default {
     };
   },
   created() {
-    let compare = function (name) {
-      return function (o, p) {
-        var a, b;
-        if (typeof o === "object" && typeof p === "object" && o && p) {
-          a = o[name];
-          b = p[name];
-          if (a === b) {
-            return 0;
-          }
-          // if (typeof a === typeof b) {
-          //   return a < b ? -1 : 1;
-          // }
-          return a < b ? -1 : 1;
-        } else {
-          throw "error";
-        }
-      };
-    };
-    this.data.sort(compare(this.data.id));
     // console.log(this.data);
     this.handleListHistory();
   },
@@ -506,7 +487,7 @@ export default {
     handleEdit(row, index) {
       this.editIndex = index;
       this.editName = row.name;
-      this.editId = row.id;
+      this.editStudyNumber = row.studyNumber;
       this.editSex = row.sex;
       this.editGrade = row.grade;
       this.editClass = row.class;
@@ -514,7 +495,7 @@ export default {
     },
     // 点击保存按钮
     handleSave(index) {
-      this.data[index].id = this.editId;
+      this.data[index].studyNumber = this.editStudyNumber;
       this.data[index].name = this.editName;
       this.data[index].sex = this.editSex;
       this.data[index].grade = this.editGrade;
@@ -616,10 +597,24 @@ export default {
     },
     // toast提交
     submit() {
-      this.data.unshift(this.formValidate);
-      this.refreshShowData();
-      this.$Message.success("添加志愿者成功");
-      this.isShowToast = false;
+      if (
+        this.formValidate.studyNumber &&
+        this.formValidate.name &&
+        this.formValidate.sex &&
+        this.formValidate.grade &&
+        this.formValidate.class &&
+        this.formValidate.phone
+      ) {
+        this.data.unshift(this.formValidate);
+        this.refreshShowData();
+        this.$Message.success("添加志愿者成功");
+        this.isShowToast = false;
+      } else {
+        this.$Message["warning"]({
+          background: true,
+          content: "必填项不能为空！",
+        });
+      }
     },
   },
 };
