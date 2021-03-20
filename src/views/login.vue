@@ -1,46 +1,98 @@
 <template>
   <div id="login">
     <div class="container">
-      <h1>志愿者管理系统</h1>
-      <Form ref="formInline" :model="formInline" :rules="ruleInline">
-        <FormItem prop="user">
-          <Input type="text" v-model="formInline.user" placeholder="用户名">
-            <Icon type="ios-person-outline" slot="prepend"></Icon>
-          </Input>
-        </FormItem>
-        <FormItem prop="password">
-          <Input
-            type="password"
-            v-model="formInline.password"
-            placeholder="密码"
-          >
-            <Icon type="ios-lock-outline" slot="prepend"></Icon>
-          </Input>
-        </FormItem>
-        <FormItem>
-          <Button
-            type="success"
-            @click="handleSubmit('formInline')"
-            style="width: 100%"
-            >登录</Button
-          >
-        </FormItem>
-      </Form>
+      <div class="login" v-show="flag">
+        <h1>志愿者管理系统</h1>
+        <Form ref="login" :model="formInline" :rules="ruleInline">
+          <FormItem prop="username">
+            <Input
+              type="text"
+              v-model="formInline.username"
+              placeholder="用户名"
+            >
+              <Icon
+                type="ios-contact-outline"
+                slot="prepend"
+                style="fontsize: 16px"
+              ></Icon>
+            </Input>
+          </FormItem>
+          <FormItem prop="password">
+            <Input
+              type="password"
+              v-model="formInline.password"
+              placeholder="密码"
+            >
+              <Icon
+                type="ios-lock-outline"
+                slot="prepend"
+                style="fontsize: 16px"
+              ></Icon>
+            </Input>
+          </FormItem>
+          <FormItem>
+            <Button type="success" @click="login('login')" style="width: 100%"
+              >登录</Button
+            >
+          </FormItem>
+          <div class="toReg" @click="toReg">没账号？去注册</div>
+        </Form>
+      </div>
+      <div class="register" v-show="!flag">
+        <h1>志愿者管理系统</h1>
+        <Form ref="register" :model="formInline" :rules="ruleInline">
+          <FormItem prop="username">
+            <Input
+              type="text"
+              v-model="formInline.username"
+              placeholder="用户名"
+            >
+              <Icon
+                type="ios-contact-outline"
+                slot="prepend"
+                style="fontsize: 16px"
+              ></Icon>
+            </Input>
+          </FormItem>
+          <FormItem prop="password">
+            <Input
+              type="password"
+              v-model="formInline.password"
+              placeholder="密码"
+            >
+              <Icon
+                type="ios-lock-outline"
+                slot="prepend"
+                style="fontsize: 16px"
+              ></Icon>
+            </Input>
+          </FormItem>
+          <FormItem>
+            <Button type="success" @click="reg('register')" style="width: 100%"
+              >注册</Button
+            >
+          </FormItem>
+          <div class="toReg" @click="toLogin">去登录</div>
+        </Form>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { loginRequest, registerRequest } from "../network/user";
+
 export default {
   name: "Login",
   data() {
     return {
+      flag: true,
       formInline: {
-        user: "",
+        username: "",
         password: "",
       },
       ruleInline: {
-        user: [
+        username: [
           {
             required: true,
             message: "请输入用户名",
@@ -64,23 +116,36 @@ export default {
     };
   },
   methods: {
-    handleSubmit(name) {
+    toReg() {
+      this.flag = false;
+    },
+    toLogin() {
+      this.flag = true;
+    },
+    login(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          console.log(this.formInline);
-          this.$axios({
-            method: "post",
-            url: "http://127.0.0.1/login",
-            data: this.formInline,
-          }).then((res) => {
-            console.log(res);
-            if (res.data.status !== 0)
-              return this.$Message.error("用户名或密码错误!");
-            this.$Message.success("登录成功!");
-            
+          loginRequest(this.formInline).then((res) => {
+            if (res.status !== 0) return this.$Message.error(res.message);
+            this.$Message.success(res.message);
+            this.$store.commit("set_token", res.token);
             this.$router.push({
               path: "/index",
             });
+          });
+        } else {
+          this.$Message.error("请输入!");
+        }
+      });
+    },
+    reg(name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+         registerRequest(this.formInline).then((res) => {
+            if (res.status === 1)
+              return this.$Message.error(res.message);
+            this.$Message.success(res.message);
+            this.toLogin();
           });
         } else {
           this.$Message.error("请输入!");
@@ -106,11 +171,19 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   /* background-color: #fff; */
+  border-radius: 5px;
 }
 h1 {
   text-align: center;
   color: #fff;
   height: 40px;
   line-height: 40px;
+}
+.toReg {
+  text-align: right;
+}
+.toReg:hover {
+  color: #fff;
+  cursor: pointer;
 }
 </style>

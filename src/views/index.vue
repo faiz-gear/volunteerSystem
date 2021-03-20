@@ -5,8 +5,12 @@
         <div class="layout-logo"></div>
         <div class="layout-nav">
           <MenuItem name="1">
-            <Icon type="ios-navigate"></Icon>
-            <span @click="login">退出登录</span>
+            <Icon type="ios-person" />
+            <span @click="exit">欢迎您：{{ username }}</span>
+          </MenuItem>
+          <MenuItem name="1">
+            <Icon type="md-exit" />
+            <span @click="exit">退出登录</span>
           </MenuItem>
         </div>
       </Menu>
@@ -68,18 +72,46 @@
       </Layout>
     </Layout>
     <Footer class="layout-footer-center"
-      >2011-2016 &copy; 湖南财政经济学院校青年志愿者协会</Footer
+      >2003-2021 &copy; 湖南财政经济学院校青年志愿者协会</Footer
     >
   </Layout>
 </template>
 
 <script>
+import { getUserInfo } from '../network/user'
+
 export default {
   name: "Index",
+  data() {
+    return {
+      username: "",
+    };
+  },
+  created() {
+    this.$Spin.show();
+    getUserInfo().then((res) => {
+      if (res.status !== 0) {
+        this.$router.push({
+          path: "/login",
+        });
+        this.$Message.error("请先登录!");
+      } else {
+        this.username = res.data.username;
+        this.$Spin.hide();
+      }
+    });
+  },
   methods: {
-    login() {
-      this.$router.push({
-        path: "/login",
+    exit() {
+      this.$Modal.confirm({
+        title: "确认退出登录吗？",
+        onOk: () => {
+          localStorage.removeItem("token");
+          this.$router.push({
+            path: "/login",
+          });
+          this.$Message.info("退出登录成功!");
+        },
       });
     },
   },

@@ -34,12 +34,7 @@
         </div>
       </div>
       <div class="content_main">
-        <Table
-          :columns="columns"
-          :data="showData"
-          :loading="loading"
-          @on-sort-change="sortChanged"
-        >
+        <Table :columns="columns" :data="data" :loading="loading">
           <template slot-scope="{ row, index }" slot="studyNumber">
             <Input
               type="text"
@@ -111,6 +106,7 @@
           :page-size="pageSize"
           @on-change="changePage"
           show-elevator
+          :current="page"
         ></page>
       </div>
     </content-manage>
@@ -118,7 +114,7 @@
       v-show="isShowToast"
       @click="showToast"
       :showToast="isShowToast"
-      @submit="submit"
+      @submit="submit('formValidate')"
       @closeToast="closeToast"
     >
       <div slot="toast_content" class="volunteerToast">
@@ -181,6 +177,13 @@
 import ContentManage from "../../components/common/contentManage/ContentManage";
 import Toast from "../../components/common/toast/Toast";
 
+import {
+  getVolunteerMsg,
+  addVolunteer,
+  updateVolunteer,
+  deleteVolunteer,
+} from "../../network/volunteer";
+
 export default {
   name: "Voluteer",
   components: {
@@ -190,6 +193,10 @@ export default {
   data() {
     return {
       gradeList: [
+        {
+          value: "所有级别",
+          label: "所有级别",
+        },
         {
           value: "2020级",
           label: "2020级",
@@ -220,7 +227,6 @@ export default {
         {
           title: "学号",
           slot: "studyNumber",
-          sortable: "custom",
         },
         {
           title: "姓名",
@@ -249,129 +255,8 @@ export default {
           align: "center",
         },
       ],
-      // 测试数据
-      data: [
-        {
-          studyNumber: "201705200101",
-          name: "姑父",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200102",
-          name: "张三",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200103",
-          name: "李四",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200104",
-          name: "阿姨",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200105",
-          name: "舅舅",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200106",
-          name: "姑姑",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200107",
-          name: "弟弟",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200108",
-          name: "哥哥",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200109",
-          name: "妹妹",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200110",
-          name: "姐姐",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200111",
-          name: "妈妈",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200112",
-          name: "爸爸",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200113",
-          name: "奶奶",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200114",
-          name: "爷爷",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-        {
-          studyNumber: "201705200115",
-          name: "叔叔",
-          sex: "男",
-          grade: "2017级",
-          class: "电商一班",
-          phone: "15616015756",
-        },
-      ],
+      // 请求获取的数据
+      data: [],
       // 操作的数据存储:与 data 分离避免重构的闪烁
       editIndex: "-1",
       editName: "",
@@ -380,18 +265,20 @@ export default {
       editGrade: "",
       editClass: "",
       editPhone: "",
+      editId: "",
+      // 存储修改后的数据
+      updateData: {},
 
-      // 实现分页：
-      // 初始化信息存储
-      ajaxHistoryData: [],
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
-      pageSize: 12,
+      pageSize: 8,
       // 当前页码
       page: 1,
-      // 每页显示信息存储
-      showData: [],
+      // 当前级别
+      grade: "",
+      // 搜索的姓名
+      name: "",
       isShowToast: false,
       // 加载中状态
       loading: false,
@@ -416,7 +303,7 @@ export default {
         studyNumber: [
           {
             required: true,
-            message: "id不能为空",
+            message: "学号不能为空",
             trigger: "blur",
           },
           {
@@ -471,17 +358,18 @@ export default {
     };
   },
   created() {
-    // console.log(this.data);
-    this.handleListHistory();
+    this.getList(this.page, this.pageSize);
   },
   methods: {
-    //初始化页面， 获取历史记录信息
-    handleListHistory() {
-      // 保存取到的所有数据
-      this.ajaxHistoryData = this.data;
-      this.dataCount = this.data.length;
-      // console.log(this.data);
-      this.refreshShowData();
+    // 发请求分页获取数据
+    getList(pageno, pagesize, grade, name) {
+      this.loading = true;
+      getVolunteerMsg(pageno, pagesize, grade, name).then((res) => {
+        if (res.status !== 0) return this.$Message.error(res.message)
+        this.data = res.data;
+        this.dataCount = res.page.total;
+        this.loading = false;
+      });
     },
     // 点击操作按钮
     handleEdit(row, index) {
@@ -492,32 +380,42 @@ export default {
       this.editGrade = row.grade;
       this.editClass = row.class;
       this.editPhone = row.phone;
+      this.editId = this.data.find(
+        (item) => item.studyNumber == row.studyNumber
+      ).id;
     },
     // 点击保存按钮
-    handleSave(index) {
-      this.data[index].studyNumber = this.editStudyNumber;
-      this.data[index].name = this.editName;
-      this.data[index].sex = this.editSex;
-      this.data[index].grade = this.editGrade;
-      this.data[index].class = this.editClass;
-      this.data[index].phone = this.editPhone;
-      this.editIndex = -1;
+    handleSave() {
+      this.updateData = {
+        studyNumber: this.editStudyNumber,
+        name: this.editName,
+        sex: this.editSex,
+        grade: this.editGrade,
+        class: this.editClass,
+        phone: this.editPhone,
+        id: this.editId,
+      };
+      updateVolunteer(this.updateData).then((res) => {
+        if (res.status !== 0) return this.$Message.error(res.message);
+        this.$Message.success("保存成功！");
+        this.getList(this.page, this.pageSize);
+        // 去掉编辑输入框
+        this.editIndex = -1;
+      });
     },
-    remove(index) {
+    remove() {
       // 确认删除弹出框
       this.$Modal.confirm({
         title: "确认删除吗？",
         onOk: () => {
-          // 删除当前保存的获取到的ajax数据
-          this.ajaxHistoryData.splice(index, 1);
-          //   console.log(index);
-          // 关闭输入框
-          this.editIndex = -1;
-          // 修改删除数据后的数据总数
-          this.dataCount = this.ajaxHistoryData.length;
-          // 重新渲染当前页
-          this.refreshShowData();
-          this.$Message.info("删除成功");
+          deleteVolunteer(this.editId).then((res) => {
+            if (res.status !== 0) return this.$Message.error(res.message);
+            // 删除成功
+            this.editIndex = -1;
+            this.$Message.info("删除成功");
+            this.page = 1;
+            this.getList(this.page, this.pageSize)
+          });
         },
         onCancel: () => {
           // 关闭输入框
@@ -526,66 +424,30 @@ export default {
         },
       });
     },
-    // 监听页码发生改变， 并模拟异步
+    // 监听页码发生改变
     changePage(index) {
       // console.log(this.ajaxHistoryData);
       clearTimeout(this.timer);
       this.page = index;
-      let _start = (index - 1) * this.pageSize;
-      let _end = index * this.pageSize;
-      this.showData = this.ajaxHistoryData.slice(_start, _end);
-      this.loading = true;
-      this.debounce();
+      this.debounce(this.page, this.pageSize, this.grade, this.name);
     },
-    // 加载中防抖
-    debounce() {
+    // 切换分页防抖
+    debounce(pageno, pagesize, grade, name) {
       this.timer = setTimeout(() => {
-        this.loading = false;
-      }, 1000);
+        this.getList(pageno, pagesize, grade, name);
+      }, 160);
     },
     //按级别显示
     showGrade(value) {
-      //从所有数据中筛选级别
-      this.ajaxHistoryData = this.data;
-      let g = this.ajaxHistoryData.filter((item) => item.grade == value);
-      this.ajaxHistoryData = g;
-      // console.log(this.ajaxHistoryData);
-      this.refreshShowData();
-      // console.log(this.ajaxHistoryData);
-      this.dataCount = g.length;
+      this.grade = value;
+      this.page = 1;
+      this.getList(this.page, this.pageSize, this.grade, this.name);
     },
     //搜索功能实现
     volSearch(value) {
-      //从所有数据中搜索
-      this.ajaxHistoryData = this.data;
-      let s = this.ajaxHistoryData.filter((item) => item.name == value);
-      // console.log(s);
-      this.ajaxHistoryData = s;
-      this.refreshShowData();
-      // console.log(this.ajaxHistoryData);
-      this.dataCount = s.length;
-    },
-    //排序
-    sortChanged() {
-      // console.log("111");
-      function sortId(a, b) {
-        return a - b;
-      }
-      this.ajaxHistoryData = this.ajaxHistoryData.sort(sortId);
-      this.showData = this.ajaxHistoryData.reverse();
-      // console.log(this.ajaxHistoryData.reverse());
-      this.refreshShowData();
-    },
-    //封装数据分页
-    refreshShowData() {
-      if (this.ajaxHistoryData.length <= this.pageSize) {
-        this.showData = this.ajaxHistoryData;
-      } else {
-        this.showData = this.ajaxHistoryData.slice(
-          (this.page - 1) * this.pageSize,
-          this.page * this.pageSize
-        );
-      }
+      this.name = value;
+      this.page = 1;
+      this.getList(this.page, this.pageSize, this.grade, this.name);
     },
     // 显示toast
     showToast() {
@@ -596,25 +458,22 @@ export default {
       this.isShowToast = false;
     },
     // toast提交
-    submit() {
-      if (
-        this.formValidate.studyNumber &&
-        this.formValidate.name &&
-        this.formValidate.sex &&
-        this.formValidate.grade &&
-        this.formValidate.class &&
-        this.formValidate.phone
-      ) {
-        this.data.unshift(this.formValidate);
-        this.refreshShowData();
-        this.$Message.success("添加志愿者成功");
-        this.isShowToast = false;
-      } else {
-        this.$Message["warning"]({
-          background: true,
-          content: "必填项不能为空！",
-        });
-      }
+    submit(formValidate) {
+      this.$refs[formValidate].validate((valid) => {
+        if (valid) {
+          addVolunteer(this.formValidate).then((res) => {
+            if (res.status !== 0) return this.$Message.error(res.message);
+            this.$Message.success("添加志愿者成功");
+            this.isShowToast = false;
+            this.getList(this.page, this.pageSize);
+          });
+        } else {
+          this.$Message["warning"]({
+            background: true,
+            content: "必填项不能为空！",
+          });
+        }
+      });
     },
   },
 };
@@ -642,15 +501,12 @@ export default {
 }
 /* 搜索框样式 */
 .ivu-input-wrapper {
-  width: 200px !important;
+  width: 150px !important;
   transform: translateY(-1px);
 }
 /* 修改操作中input框的宽度 */
 .content_main .ivu-input {
   width: 50%;
-}
-.mgleft {
-  margin-left: 10px;
 }
 /* 添加志愿者弹出框样式 */
 .volunteerToast div {
@@ -671,6 +527,6 @@ export default {
   width: 68% !important;
 }
 .ivu-form-item {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 </style>

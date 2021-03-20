@@ -41,7 +41,7 @@ export default {
 
 <style scoped>
 .toast {
-  position: fixed;
+  position: absolute;
   width: 100%;
   height: 100%;
   top: 0;
@@ -50,9 +50,9 @@ export default {
   background: rgba(0, 0, 0, 0.5);
 }
 .wrapper {
-  position: fixed;
-  width: 600px;
-  height: 80%;
+  position: absolute;
+  width: 400px;
+  height: 430px;
   transform: translate(50%, -50%);
   top: 50%;
   right: 50%;
@@ -76,14 +76,14 @@ export default {
   }
 }
 .toast_top {
-  height: 100px;
+  height: 50px;
   box-sizing: border-box;
-  padding: 30px 0;
-  border-bottom: 1px solid #ccc;
+  padding: 5px 0;
+  /* border-bottom: 1px solid #ccc; */
 }
 .toast_top h2 {
   position: relative;
-  font-size: 25px;
+  font-size: 20px;
   line-height: 40px;
   text-align: center;
   font-weight: bold;
@@ -104,14 +104,14 @@ export default {
 .toast_content {
   width: 100%;
   box-sizing: border-box;
-  padding-top: 20px;
+  /* padding-top: 20px; */
 }
 .toast_content > div > div {
   padding-left: 80px;
 }
-.toast_bottom {
+/* .toast_bottom {
   margin-top: 40px;
-}
+} */
 /* 按钮位置 */
 .toast_bottom .r {
   margin-right: 20px;

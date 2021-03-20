@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "axios": "^0.20.0",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
     "iview": "^3.5.4",
     "view-design": "^4.4.0",
     "vue": "^2.5.2",

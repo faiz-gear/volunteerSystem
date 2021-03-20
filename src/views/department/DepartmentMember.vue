@@ -105,6 +105,7 @@
       :showToast="isShowToast"
       @submit="submit"
       @closeToast="closeToast"
+      :title="'添加成员'"
     >
       <div slot="toast_content" class="departmentToast">
         <Form
@@ -126,10 +127,18 @@
             </RadioGroup>
           </FormItem>
           <FormItem label="部门" prop="department">
-            <Input
+            <Select
+              style="width: 68%"
               v-model="formValidate.department"
-              placeholder="请输入你的部门"
-            ></Input>
+              placeholder="请选择你的部门"
+            >
+              <Option
+                v-for="(item, index) in cityList"
+                :key="index"
+                :value=item.value
+                >{{item.value}}</Option
+              >
+            </Select>
           </FormItem>
           <FormItem label="职位" prop="position">
             <Input
@@ -162,6 +171,10 @@ export default {
   data() {
     return {
       cityList: [
+        {
+          value: "体育部",
+          label: "体育部",
+        },
         {
           value: "办公室",
           label: "办公室",
@@ -358,7 +371,7 @@ export default {
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
-      pageSize: 12,
+      pageSize: 8,
       // 当前页码
       page: 1,
       // 每页显示信息存储
@@ -588,7 +601,7 @@ export default {
         this.$Message.success("添加志愿者成功");
         this.isShowToast = false;
       } else {
-        this.$Message['warning']({
+        this.$Message["warning"]({
           background: true,
           content: "必填项不能为空！",
         });

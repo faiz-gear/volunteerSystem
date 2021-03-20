@@ -266,7 +266,6 @@ export default {
     },
     submit() {
       if (!this.name) {
-        console.log(1);
         return this.$Message.info("部门名称不能为空");
       }
       if (!this.number) {

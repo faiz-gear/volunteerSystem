@@ -10,34 +10,52 @@
           search
           placeholder="输入文件名"
           style="wdith: 200px; float: right; margin-right: 10px"
+          @on-search="fileSearch"
+          v-model="search"
         />
       </div>
       <div class="content_main">
         <div class="table">
-          <Table
-            border
-            ref="selection"
-            :columns="columns4"
-            :data="showData"
-            @on-selection-change="selectionChange"
-          ></Table>
+          <Table border :columns="columns4" :data="data" :loading="loading">
+            <template slot-scope="{ row, index }" slot="action">
+              <Button
+                type="primary"
+                size="small"
+                style="margin-right: 5px"
+                @click="downloadFile(index)"
+                >下载</Button
+              >
+              <Button type="error" size="small" @click="removeFile(index)"
+                >删除</Button
+              >
+            </template>
+          </Table>
         </div>
         <div class="bottom">
           <div>
-            <Button>批量下载</Button>
-            <Button @click="deleteSelected">批量删除</Button>
             <Upload
-              action="http://127.0.0.1/login"
+              action="http://127.0.0.1/addfileplan"
               style="display: inline-block"
               :format="['doc', 'docx']"
-              :on-format-error="handleFormatError"
-              :on-success="handleSuccess"
               :show-upload-list="false"
+              :before-upload="beforeUpload"
+              name="address"
             >
               <Button icon="ios-cloud-upload-outline" type="success"
                 >文件上传</Button
               >
             </Upload>
+            <div v-if="file !== null" style="display: inline-block">
+              您选择的文件是: {{ file.name }}
+              <Icon
+                type="ios-trash"
+                @click.native="handleRemove()"
+                style="fontsize: 18px; cursor: pointer"
+              ></Icon>
+              <Button type="dashed" @click="upload" :loading="loadingStatus">{{
+                loadingStatus ? "上传中" : "确认上传"
+              }}</Button>
+            </div>
           </div>
           <Page
             :total="dataCount"
@@ -54,6 +72,8 @@
 <script>
 import ContentManage from "../../components/common/contentManage/ContentManage";
 
+import { addFilePlan, getFilePlan, downloadFilePlan, removeFilePlan } from "../../network/file";
+
 export default {
   name: "FilePlan",
   components: {
@@ -62,11 +82,6 @@ export default {
   data() {
     return {
       columns4: [
-        {
-          type: "selection",
-          width: 60,
-          align: "center",
-        },
         {
           title: "文件名称",
           key: "name",
@@ -79,243 +94,120 @@ export default {
           title: "上传时间",
           key: "date",
         },
-      ],
-      data: [
         {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-03",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-01",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14",
-          date: "2016-10-02",
-        },
-        {
-          name: "安全专项方案.doc",
-          size: "21.3kb",
-          address: "2016-03-14k54564",
-          date: "2016-10-04",
+          title: "操作",
+          slot: "action",
+          width: 150,
+          align: "center",
         },
       ],
+      data: [],
       // 实现分页：
-      // 初始化信息存储
-      ajaxHistoryData: [],
       // 初始化信息总条数
       dataCount: 0,
       // 每页显示条数
       pageSize: 8,
       // 当前页码
       page: 1,
-      // 每页显示信息存储
-      showData: [],
-      // 已经勾选的项数据
-      selection: null,
+      token: localStorage.getItem("token"),
+      // 正在上传的文件
+      file: null,
+      // 是否显示上传中
+      loadingStatus: false,
+      search: "",
+      loading: false,
     };
   },
   created() {
-    this.handleListHistory();
+    this.loading = true;
+    this.getFileList(this.page, this.pageSize);
   },
   methods: {
-    // 监听页码发生改变， 并模拟异步
-    changePage(index) {
-      // console.log(this.ajaxHistoryData);
-      clearTimeout(this.timer);
-      this.page = index;
-      let _start = (index - 1) * this.pageSize;
-      let _end = index * this.pageSize;
-      this.showData = this.ajaxHistoryData.slice(_start, _end);
-      this.loading = true;
-      this.debounce();
-    },
-    // 加载中防抖
-    debounce() {
-      this.timer = setTimeout(() => {
+    // 获取文件信息列表
+    getFileList(pageno, pagesize, search) {
+      getFilePlan(pageno, pagesize, search).then((res) => {
+        console.log(res);
+        if (res.status !== 0) {
+          this.$Message.error(res.message);
+          this.loading = false;
+          return;
+        }
+        this.data = res.data;
+        this.dataCount = res.page.total;
         this.loading = false;
-      }, 1000);
-    },
-    //封装数据分页
-    refreshShowData() {
-      if (this.ajaxHistoryData.length <= this.pageSize) {
-        this.showData = this.ajaxHistoryData;
-      } else {
-        this.showData = this.ajaxHistoryData.slice(
-          (this.page - 1) * this.pageSize,
-          this.page * this.pageSize
-        );
-      }
-    },
-    // 初始化
-    //初始化页面， 获取历史记录信息
-    handleListHistory() {
-      // 保存取到的所有数据
-      this.ajaxHistoryData = this.data;
-      this.dataCount = this.data.length;
-      // console.log(this.data);
-      this.refreshShowData();
-    },
-    // 上传文件格式错误的回调函数
-    handleFormatError(file) {
-      this.$Notice.warning({
-        title: "选择上传的文件格式不正确，请重新选择!",
-        desc: "文件格式 " + file.name + " 不正确, 请选择doc格式的文件.",
       });
     },
-    // 上传文件成功时的回调
-    handleSuccess(res, file) {
-      /* file.url =
-        "https://o5wwk8baw.qnssl.com/7eb99afb9d5f317c912f08b5212fd69a/avatar";
-      file.name = "7eb99afb9d5f317c912f08b5212fd69a"; */
-      var name = file.name;
-      var size = file.size;
-      size = this.filterSize(size);
-      var date = this.getTime();
-      this.data.unshift({ name, size, date });
-      this.$Message.success("文件上传成功");
-      this.refreshShowData();
-      console.log(res);
+    // 阻止默认的上传行为
+    beforeUpload(file) {
+      this.file = file;
+      return false;
     },
-    // 换算文件大小方法
-    filterSize(size) {
-      if (!size) return "";
-      if (size < this.pow1024(1)) return size + " B";
-      if (size < this.pow1024(2))
-        return (size / this.pow1024(1)).toFixed(2) + " KB";
-      if (size < this.pow1024(3))
-        return (size / this.pow1024(2)).toFixed(2) + " MB";
-      if (size < this.pow1024(4))
-        return (size / this.pow1024(3)).toFixed(2) + " GB";
-      return (size / pow1024(4)).toFixed(2) + " TB";
+    // 上传
+    upload() {
+      this.loadingStatus = true;
+      let fd = new FormData();
+      fd.append("address", this.file);
+      addFilePlan(fd).then((res) => {
+        if (res.status !== 0) {
+          this.$Message.error(res.message);
+          this.loadingStatus = false;
+          return;
+        }
+        this.file = null;
+        this.loadingStatus = false;
+        this.$Message.success(res.message);
+        this.getFileList(1, this.pageSize);
+      });
     },
-    pow1024(num) {
-      return Math.pow(1024, num);
+    // 取消本次选择的文件
+    handleRemove() {
+      this.file = null;
     },
-    getTime() {
-      var date = new Date();
-      var year = date.getFullYear();
-      var month = date.getMonth() + 1;
-      month = month < 10 ? "0" + month : month;
-      var day = date.getDate();
-      day = day < 10 ? "0" + day : day;
-      return year + "-" + month + "-" + day;
+    // 搜索功能
+    fileSearch() {
+      this.loading = true;
+      this.getFileList(1, this.pageSize, this.search);
     },
-    // 选中项发生变化时
-    selectionChange(selection) {
-      this.selection = selection;
+    // 监听页码发生改变
+    changePage(index) {
+      clearTimeout(this.timer);
+      this.page = index;
+      this.loading = true;
+      this.debounce(this.page, this.pagesize, this.search);
     },
-    // 批量删除
-    deleteSelected() {
+    // 切换分页防抖
+    debounce(pageno, pagesize, search) {
+      this.timer = setTimeout(() => {
+        this.getFileList(pageno, pagesize, search);
+        this.loading = false;
+      }, 160);
+    },
+    // 删除
+    removeFile(index) {
       this.$Modal.confirm({
         title: "确认删除吗？",
-        onOk: () => {
-          // 删除选中的数据
-          this.selection &&
-            this.selection.forEach((v) => {
-              let index = this.ajaxHistoryData.findIndex(
-                (value) => value.id == v.id
-              );
-              this.ajaxHistoryData.splice(index, 1);
-            });
-          // 修改当前数据总条数
-          this.dataCount = this.ajaxHistoryData.length;
-          this.refreshShowData();
-          this.$Message.info("删除成功");
+        onOk: async () => {
+          const res = await removeFilePlan(this.data[index].id);
+          if (res.status !== 0) return this.$Message.error(res.message);
+          this.$Message.error('删除文件成功！');
+          this.getFileList(1, this.pageSize)
         },
         onCancel: () => {
-          this.$Message.info("取消删除");
+          this.$Message.error('取消删除')
+        }
+      });
+    },
+    downloadFile(index) {
+      this.$Modal.confirm({
+        title: "确认下载吗？",
+        onOk: async () => {
+          const res = await downloadFilePlan(this.data[index].id);
+          if (res.status !== 0) return this.$Message.error(res.message);
+          window.open("http://127.0.0.1" + res.data.address);
         },
+        onCancel: () => {
+          this.$Message.error('取消下载')
+        }
       });
     },
   },

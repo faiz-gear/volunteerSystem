@@ -33,15 +33,15 @@
             <Col span="12">{{ item.charge }}</Col>
           </Row>
         </div>
-        <page
-          style="position: absolute; right: 82px; bottom: 10px"
-          :total="dataCount"
-          :page-size="pageSize"
-          @on-change="changePage"
-          show-elevator
-        ></page>
       </div>
     </div>
+     <page
+        style="position: absolute; right: 82px; bottom: -30px"
+        :total="dataCount"
+        :page-size="pageSize"
+        @on-change="changePage"
+        show-elevator
+      ></page>
   </div>
 </template>
 
@@ -103,7 +103,7 @@ export default {
         },
         {
           name: "关爱抗战老兵",
-          status: "进行中",
+          status: "筹备中",
           description: "这是关爱抗战老兵活动",
           targetNumber: "20",
           regNumber: "20",
@@ -195,6 +195,8 @@ export default {
       switch (status) {
         case "进行中":
           return "background-color: #27ae60;";
+        case "筹备中":
+          return "background-color: #0984e3;";
         case "已取消":
           return "background-color: #ee5253;";
         case "已结束":
@@ -242,12 +244,15 @@ export default {
   
 <style>
 #content {
+  position: relative;
   background-color: #f5f7f9 !important;
   width: 100%;
 }
 .activity-list {
+  position: relative;
   display: flex;
   justify-content: space-around;
+  align-content: flex-start;
   flex-wrap: wrap;
   width: 100%;
   height: 100%;
@@ -255,8 +260,8 @@ export default {
 }
 .activity-item {
   width: 30%;
-  height: 300px;
-  margin: 10px;
+  height: 240px;
+  margin: 5px;
   border: 1px solid #dcdee2;
 }
 .activity-item:hover {
@@ -264,12 +269,12 @@ export default {
 }
 .activity-name {
   border-bottom: 2px solid #e5e5e5;
-  height: 50px;
+  height: 40px;
 }
 .activity-name h1 {
   display: flex;
   justify-content: space-between;
-  padding: 15px;
+  padding: 8px;
   font-weight: 600;
   font-size: 14px;
 }
@@ -282,7 +287,7 @@ export default {
 .activity-content {
   padding: 15px;
   background-color: #fff;
-  height: 165px;
+  height: 135px;
 }
 .title {
   font-weight: bold;
@@ -291,15 +296,15 @@ export default {
 .desc {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  height: 50px;
+  height: 36px;
 }
 .progress p {
   padding: 20px 0 10px 0;
 }
 .bottom {
-  height: 85px;
+  height: 65px;
   background-color: #fff;
   text-align: center;
   padding: 15px;

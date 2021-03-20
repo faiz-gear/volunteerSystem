@@ -14,7 +14,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #fff;
-  position: relative;
+  /* position: relative; */
   animation: move 1s ease forwards;
 }
 @keyframes move {
